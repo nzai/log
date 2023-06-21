@@ -11,7 +11,8 @@ import (
 
 type ZapLogger struct {
 	*zap.Logger
-	dynamicFields func(context.Context) []Field
+	dynamicFields       func(context.Context) []Field
+	dynamicKeyAndValues func(context.Context) []interface{}
 }
 
 func NewZapLogger(parameter *Parameter) *ZapLogger {
@@ -24,8 +25,9 @@ func NewZapLogger(parameter *Parameter) *ZapLogger {
 	}))
 
 	logger := &ZapLogger{
-		Logger:        zap.New(core, zap.AddCaller(), zap.AddCallerSkip(2)),
-		dynamicFields: parameter.DynamicFields,
+		Logger:              zap.New(core, zap.AddCaller(), zap.AddCallerSkip(2)),
+		dynamicFields:       parameter.DynamicFields,
+		dynamicKeyAndValues: parameter.DynamicKeyAndValues,
 	}
 
 	if len(parameter.StaticFields) > 0 {
@@ -43,12 +45,20 @@ func (l ZapLogger) Debug(ctx context.Context, message string, fields ...Field) {
 	l.Logger.Debug(message, l.parseFields(fields)...)
 }
 
+func (l ZapLogger) Debugw(ctx context.Context, message string, keyAndValues ...interface{}) {
+	l.Logger.Sugar().Debugw(message, append(l.dynamicKeyAndValues(ctx), keyAndValues...)...)
+}
+
 func (l ZapLogger) Info(ctx context.Context, message string, fields ...Field) {
 	if l.dynamicFields != nil {
 		fields = append(fields, l.dynamicFields(ctx)...)
 	}
 
 	l.Logger.Info(message, l.parseFields(fields)...)
+}
+
+func (l ZapLogger) Infow(ctx context.Context, message string, keyAndValues ...interface{}) {
+	l.Logger.Sugar().Infow(message, append(l.dynamicKeyAndValues(ctx), keyAndValues...)...)
 }
 
 func (l ZapLogger) Warn(ctx context.Context, message string, fields ...Field) {
@@ -59,12 +69,20 @@ func (l ZapLogger) Warn(ctx context.Context, message string, fields ...Field) {
 	l.Logger.Warn(message, l.parseFields(fields)...)
 }
 
+func (l ZapLogger) Warnw(ctx context.Context, message string, keyAndValues ...interface{}) {
+	l.Logger.Sugar().Warnw(message, append(l.dynamicKeyAndValues(ctx), keyAndValues...)...)
+}
+
 func (l ZapLogger) Error(ctx context.Context, message string, fields ...Field) {
 	if l.dynamicFields != nil {
 		fields = append(fields, l.dynamicFields(ctx)...)
 	}
 
 	l.Logger.Error(message, l.parseFields(fields)...)
+}
+
+func (l ZapLogger) Errorw(ctx context.Context, message string, keyAndValues ...interface{}) {
+	l.Logger.Sugar().Errorw(message, append(l.dynamicKeyAndValues(ctx), keyAndValues...)...)
 }
 
 func (l ZapLogger) Panic(ctx context.Context, message string, fields ...Field) {
@@ -75,12 +93,20 @@ func (l ZapLogger) Panic(ctx context.Context, message string, fields ...Field) {
 	l.Logger.Panic(message, l.parseFields(fields)...)
 }
 
+func (l ZapLogger) Panicw(ctx context.Context, message string, keyAndValues ...interface{}) {
+	l.Logger.Sugar().Panicw(message, append(l.dynamicKeyAndValues(ctx), keyAndValues...)...)
+}
+
 func (l ZapLogger) Fatal(ctx context.Context, message string, fields ...Field) {
 	if l.dynamicFields != nil {
 		fields = append(fields, l.dynamicFields(ctx)...)
 	}
 
 	l.Logger.Fatal(message, l.parseFields(fields)...)
+}
+
+func (l ZapLogger) Fatalw(ctx context.Context, message string, keyAndValues ...interface{}) {
+	l.Logger.Sugar().Fatalw(message, append(l.dynamicKeyAndValues(ctx), keyAndValues...)...)
 }
 
 func (l ZapLogger) parseFields(fields []Field) []zap.Field {

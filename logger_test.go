@@ -81,6 +81,9 @@ func TestNewWriter(t *testing.T) {
 	file, _ := ioutil.TempFile(".", "logger*.log")
 	defer file.Close()
 
+	type tt struct{}
+	t1 := tt{}
+
 	ReplaceGlobals(New(
 		WithWriter(file),
 		WithLogLevel(LevelDebug),
@@ -89,10 +92,10 @@ func TestNewWriter(t *testing.T) {
 			String("hello", "world"),
 		}),
 		WithDynamicFields(func(ctx context.Context) []Field {
-			value, ok := ctx.Value("aabbccddKK").(string)
+			value, ok := ctx.Value(t1).(string)
 
 			return []Field{
-				String("aabbccddKK", value),
+				String("did", value),
 				Bool("ok", ok),
 			}
 		}),
@@ -103,10 +106,40 @@ func TestNewWriter(t *testing.T) {
 	Warn(testContext, "Warn test", testFields...)
 	Error(testContext, "Error test", testFields...)
 
-	ctx := context.WithValue(testContext, "aabbccddKK", "665544332211")
+	ctx := context.WithValue(testContext, t1, "665544332211")
 
 	Debug(ctx, "Debug test", testFields...)
 	Info(ctx, "Info test", testFields...)
 	Warn(ctx, "Warn test", testFields...)
 	Error(ctx, "Error test", testFields...)
+}
+
+func TestSuger(t *testing.T) {
+	testContext = context.Background()
+
+	file, _ := ioutil.TempFile(".", "logger*.log")
+	defer file.Close()
+
+	type tt struct{}
+	t1 := tt{}
+
+	ReplaceGlobals(New(
+		WithWriter(file),
+		WithLogLevel(LevelDebug),
+		WithDynamicKeyAndValues(func(ctx context.Context) []interface{} {
+			value, _ := ctx.Value(t1).(string)
+			return []interface{}{"tid", value}
+		}),
+		WithStaticFields([]Field{
+			String("service", "test"),
+			String("hello", "world"),
+		}),
+	))
+
+	ctx := context.WithValue(testContext, t1, "665544332211")
+
+	Debugw(ctx, "Debug test")
+	Infow(ctx, "Info test")
+	Warnw(ctx, "Warn test")
+	Errorw(ctx, "Error test")
 }

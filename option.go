@@ -6,10 +6,11 @@ import (
 )
 
 type Parameter struct {
-	Writer        io.Writer
-	LogLevel      LogLevel
-	StaticFields  []Field
-	DynamicFields func(context.Context) []Field
+	Writer              io.Writer
+	LogLevel            LogLevel
+	StaticFields        []Field
+	DynamicFields       func(context.Context) []Field
+	DynamicKeyAndValues func(context.Context) []interface{}
 }
 
 // Option logger option
@@ -36,5 +37,11 @@ func WithStaticFields(fields []Field) Option {
 func WithDynamicFields(fn func(context.Context) []Field) Option {
 	return func(c *Parameter) {
 		c.DynamicFields = fn
+	}
+}
+
+func WithDynamicKeyAndValues(fn func(context.Context) []interface{}) Option {
+	return func(c *Parameter) {
+		c.DynamicKeyAndValues = fn
 	}
 }
