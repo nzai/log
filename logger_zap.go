@@ -16,7 +16,13 @@ type ZapLogger struct {
 }
 
 func NewZapLogger(parameter *Parameter) *ZapLogger {
-	encoder := zapcore.NewJSONEncoder(zap.NewDevelopmentEncoderConfig())
+	var encoder zapcore.Encoder
+	if parameter.Encoder == Console {
+		encoder = zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+	} else {
+		encoder = zapcore.NewJSONEncoder(zap.NewDevelopmentEncoderConfig())
+	}
+
 	writer := zapcore.AddSync(parameter.Writer)
 
 	level := newZapLogLevel(parameter.LogLevel)

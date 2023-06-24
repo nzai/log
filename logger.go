@@ -27,6 +27,7 @@ var (
 
 func New(options ...Option) Logger {
 	parameter := &Parameter{
+		Encoder:  JSON,
 		Writer:   os.Stdout,
 		LogLevel: LevelDebug,
 	}

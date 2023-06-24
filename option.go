@@ -6,6 +6,7 @@ import (
 )
 
 type Parameter struct {
+	Encoder             Encoder
 	Writer              io.Writer
 	LogLevel            LogLevel
 	StaticFields        []Field
@@ -13,8 +14,25 @@ type Parameter struct {
 	DynamicKeyAndValues func(context.Context) []interface{}
 }
 
+type Encoder string
+
+const (
+	JSON    Encoder = "json"
+	Console Encoder = "console"
+)
+
+func (e Encoder) String() string {
+	return string(e)
+}
+
 // Option logger option
 type Option func(*Parameter)
+
+func WithEncoder(e Encoder) Option {
+	return func(c *Parameter) {
+		c.Encoder = e
+	}
+}
 
 func WithWriter(w io.Writer) Option {
 	return func(c *Parameter) {

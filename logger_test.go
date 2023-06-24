@@ -124,6 +124,7 @@ func TestSuger(t *testing.T) {
 	t1 := tt{}
 
 	ReplaceGlobals(New(
+		WithEncoder(Console),
 		WithWriter(file),
 		WithLogLevel(LevelDebug),
 		WithDynamicKeyAndValues(func(ctx context.Context) []interface{} {
